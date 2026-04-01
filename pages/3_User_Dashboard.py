@@ -57,14 +57,26 @@ if os.path.exists(LOGS_DB):
         
         # Plot the latitude and longitude on a map
         # This filters out the 0.0 coordinates from successful logins
+        # Plot the latitude and longitude on an interactive 'Google Maps' style map
         map_data = failed_attempts[(failed_attempts['lat'] != 0.0) & (failed_attempts['lon'] != 0.0)]
         if not map_data.empty:
-            st.map(map_data[['lat', 'lon']], zoom=1, color="#ff4b4b")
+            fig_map = px.scatter_mapbox(
+                map_data, 
+                lat="lat", 
+                lon="lon", 
+                hover_name="Location",
+                hover_data={"lat": False, "lon": False, "IP_Address": True, "Device": True},
+                color_discrete_sequence=["#ff4b4b"], 
+                zoom=4, 
+                height=400
+            )
+            # This line forces the bright, detailed street map style!
+            fig_map.update_layout(mapbox_style="open-street-map")
+            fig_map.update_layout(margin={"r":0, "t":0, "l":0, "b":0}) # Removes extra borders
+            
+            st.plotly_chart(fig_map, use_container_width=True)
         else:
             st.info("No coordinate data available for these attacks.")
-
-        st.write("<br>", unsafe_allow_html=True)
-
         # --- VISUAL CHARTS ---
         c1, c2 = st.columns(2)
         with c1:

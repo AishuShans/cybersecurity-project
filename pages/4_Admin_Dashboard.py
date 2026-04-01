@@ -6,6 +6,64 @@ import os
 from datetime import datetime
 from utils.style import apply_master_theme
 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+from utils.style import apply_master_theme # Ensure your theme loads on this page too
+
+# 1. Page Configuration (Must be the first command)
+st.set_page_config(page_title="Admin Dashboard", layout="wide", page_icon="🛡️")
+
+# 2. Apply your custom CSS theme
+apply_master_theme()
+
+# --- 3. THE SECURE ADMIN GATEWAY ---
+# Initialize the security token in the session state
+if 'admin_logged_in' not in st.session_state:
+    st.session_state.admin_logged_in = False
+
+# If the admin is NOT logged in, show the login form and STOP the page
+if not st.session_state.admin_logged_in:
+    st.markdown("<h1 style='text-align: center; color: #a855f7;'>🔐 Restricted System Access</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #888;'>Enter Level-4 Administrator credentials to proceed.</p>", unsafe_allow_html=True)
+    
+    # Create a centered login box
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        with st.form("admin_login_form"):
+            admin_id = st.text_input("Administrator ID", placeholder="Enter ID...")
+            admin_pass = st.text_input("Secure Passcode", type="password", placeholder="Enter Passcode...")
+            
+            # Using width="stretch" to keep your terminal free of warnings
+            submit_login = st.form_submit_button("Authenticate", width="stretch")
+            
+            if submit_login:
+                # Set your actual admin username and password here
+                if admin_id == "admin" and admin_pass == "admin@123":
+                    st.session_state.admin_logged_in = True
+                    st.success("✅ Authentication Verified. Decrypting Dashboard...")
+                    st.rerun() # Reloads the page to clear the lock
+                else:
+                    st.error("🚨 ACCESS DENIED: Invalid credentials detected and logged.")
+    
+    # CRITICAL: This command completely stops the rest of the script from running.
+    # No charts, data, or dashboard elements will load until logged in.
+    st.stop()
+
+
+# --- 4. ACTUAL ADMIN DASHBOARD CONTENT ---
+# Everything below this line will ONLY execute if the admin is successfully logged in.
+
+st.title("🌐 Global Threat Intelligence Dashboard")
+st.write("Welcome to the secure administrator control panel.")
+
+# Add a secure logout button in the sidebar
+st.sidebar.markdown("---")
+if st.sidebar.button("🚪 Secure Logout", width="stretch"):
+    st.session_state.admin_logged_in = False
+    st.rerun()
+
+
 # --- 1. PAGE SETUP & THEME ---
 st.set_page_config(page_title="Admin Security Dashboard", page_icon="🛡️", layout="wide")
 apply_master_theme()
